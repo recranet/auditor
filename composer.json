@@ -17,7 +17,8 @@
     "symfony/cache": "^5.4|^6.0|^7.0",
     "symfony/event-dispatcher": "^5.4|^6.0|^7.0",
     "symfony/lock": "^5.4|^6.0|^7.0",
-    "symfony/options-resolver": "^5.4|^6.0|^7.0"
+    "symfony/options-resolver": "^5.4|^6.0|^7.0",
+    "symfony/property-access": "^7.2"
   },
   "suggest": {
     "damienharper/auditor-bundle": "Integrate auditor library in your Symfony projects."

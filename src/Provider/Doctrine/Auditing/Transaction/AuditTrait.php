@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\FieldMapping;
 use Doctrine\ORM\Mapping\MappingException as ORMMappingException;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 trait AuditTrait
 {
@@ -132,7 +133,29 @@ trait AuditTrait
     }
 
     /**
-     * Computes a usable diff formatted as follow:
+     * Returns the extra fields if set.
+     */
+    private function extraFields(object $entity): array
+    {
+        $configuration = $this->provider->getConfiguration();
+        $extraFieldProperties = array_keys($configuration->getExtraFields());
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+
+        $extraFields = [];
+
+        foreach ($extraFieldProperties as $extraField) {
+            if (!$propertyAccessor->isReadable($entity, $extraField)) {
+                continue;
+            }
+
+            $extraFields[$extraField] = $propertyAccessor->getValue($entity, $extraField);
+        }
+
+        return $extraFields;
+    }
+
+    /**
+     * Computes a usable diff formatted as follows:
      * [
      *   // field1 value has changed
      *   'field1' => [

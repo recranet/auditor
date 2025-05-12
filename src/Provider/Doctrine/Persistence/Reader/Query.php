@@ -6,6 +6,7 @@ namespace DH\Auditor\Provider\Doctrine\Persistence\Reader;
 
 use DH\Auditor\Exception\InvalidArgumentException;
 use DH\Auditor\Model\Entry;
+use DH\Auditor\Provider\ConfigurationInterface;
 use DH\Auditor\Provider\Doctrine\Persistence\Helper\SchemaHelper;
 use DH\Auditor\Provider\Doctrine\Persistence\Reader\Filter\DateRangeFilter;
 use DH\Auditor\Provider\Doctrine\Persistence\Reader\Filter\FilterInterface;
@@ -67,7 +68,7 @@ final class Query implements QueryInterface
 
     private readonly \DateTimeZone $timezone;
 
-    public function __construct(private readonly string $table, private readonly Connection $connection, string $timezone)
+    public function __construct(private readonly string $table, private readonly Connection $connection, private readonly ConfigurationInterface $configuration, string $timezone)
     {
         $this->timezone = new \DateTimeZone($timezone);
 
@@ -162,8 +163,7 @@ final class Query implements QueryInterface
 
     public function getSupportedFilters(): array
     {
-        return array_keys(SchemaHelper::getAuditTableIndices('fake'));
-    }
+        return array_keys($this->configuration->getAllIndices('fake'));    }
 
     public function getFilters(): array
     {
