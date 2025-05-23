@@ -1,5 +1,5 @@
 {
-  "name": "damienharper/auditor",
+  "name": "recranet/auditor",
   "type": "library",
   "description": "The missing audit log library.",
   "keywords": ["doctrine", "audit", "audit-log", "audit-trail"],
@@ -8,6 +8,10 @@
     {
       "name": "Damien Harper",
       "email": "damien.harper@gmail.com"
+    },
+    {
+      "name": "Simon Decloedt",
+      "email": "simon@recranet.com"
     }
   ],
   "require": {
