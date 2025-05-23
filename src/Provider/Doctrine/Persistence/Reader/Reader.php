@@ -48,7 +48,13 @@ final readonly class Reader implements ReaderInterface
         $connection = $this->provider->getStorageServiceForEntity($entity)->getEntityManager()->getConnection();
         $timezone = $this->provider->getAuditor()->getConfiguration()->getTimezone();
 
-        $query = new Query($this->getEntityAuditTableName($entity), $connection, $timezone);
+        $query = new Query(
+            $this->getEntityAuditTableName($entity),
+            $connection,
+            $this->provider->getConfiguration(),
+            $timezone,
+        );
+
         $query
             ->addOrderBy(Query::CREATED_AT, 'DESC')
             ->addOrderBy(Query::ID, 'DESC')
@@ -86,6 +92,12 @@ final readonly class Reader implements ReaderInterface
             && ORMMetadata::INHERITANCE_TYPE_SINGLE_TABLE === $metadata->inheritanceType
         ) {
             $query->addFilter(new SimpleFilter(Query::DISCRIMINATOR, $entity));
+        }
+
+        foreach ($this->provider->getConfiguration()->getExtraIndices() as $indexedField => $extraIndexConfig) {
+            if (null !== $config[$indexedField]) {
+                $query->addFilter(new SimpleFilter($indexedField, $config[$indexedField]));
+            }
         }
 
         return $query;
@@ -204,6 +216,11 @@ final readonly class Reader implements ReaderInterface
             ->setAllowedValues('page', static fn (?int $value): bool => null === $value || $value >= 1)
             ->setAllowedValues('page_size', static fn (?int $value): bool => null === $value || $value >= 1)
         ;
+
+        foreach ($this->provider->getConfiguration()->getExtraIndices() as $indexedField => $extraIndexConfig) {
+            $resolver->setDefault($indexedField, null);
+            $resolver->setAllowedTypes($indexedField, ['null', 'int', 'string', 'array']);
+        }
     }
 
     /**

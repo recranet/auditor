@@ -31,23 +31,6 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 final class DoctrineProvider extends AbstractProvider
 {
-    /**
-     * @var array<string, string>
-     */
-    private const FIELDS = [
-        'type' => '?',
-        'object_id' => '?',
-        'discriminator' => '?',
-        'transaction_hash' => '?',
-        'diffs' => '?',
-        'blame_id' => '?',
-        'blame_user' => '?',
-        'blame_user_fqdn' => '?',
-        'blame_user_firewall' => '?',
-        'ip' => '?',
-        'created_at' => '?',
-    ];
-
     private readonly TransactionManager $transactionManager;
 
     public function __construct(ConfigurationInterface $configuration)
@@ -133,12 +116,14 @@ final class DoctrineProvider extends AbstractProvider
         $entity = $payload['entity'];
         unset($payload['table'], $payload['entity']);
 
-        $keys = array_keys(self::FIELDS);
-        $query = \sprintf(
+        $fields = array_combine(array_keys($payload), array_map(function ($x) {return ":{$x}"; }, array_keys($payload)));
+        \assert(\is_array($fields));    // helps PHPStan
+
+        $query = sprintf(
             'INSERT INTO %s (%s) VALUES (%s)',
             $auditTable,
-            implode(', ', $keys),
-            implode(', ', array_values(self::FIELDS))
+            implode(', ', array_keys($fields)),
+            implode(', ', array_values($fields))
         );
 
         /** @var StorageService $storageService */
@@ -146,7 +131,7 @@ final class DoctrineProvider extends AbstractProvider
         $statement = $storageService->getEntityManager()->getConnection()->prepare($query);
 
         foreach ($payload as $key => $value) {
-            $statement->bindValue(array_search($key, $keys, true) + 1, $value);
+            $statement->bindValue($key, $value);
         }
 
         $statement->executeStatement();
