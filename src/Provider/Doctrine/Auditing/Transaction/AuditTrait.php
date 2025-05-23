@@ -148,7 +148,13 @@ trait AuditTrait
                 continue;
             }
 
-            $extraFields[$extraField] = $propertyAccessor->getValue($entity, $extraField);
+            $value = $propertyAccessor->getValue($entity, $extraField);
+
+            if (is_object($value) && method_exists($value, 'getId')) {
+                $value = $value->getId();
+            }
+
+            $extraFields[$extraField] = $value;
         }
 
         return $extraFields;
